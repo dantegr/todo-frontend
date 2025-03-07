@@ -7,20 +7,54 @@ import {
   Grid,
   TextField,
   Typography,
+  Alert,
 } from "@mui/material";
 import { LockOutlined } from "@mui/icons-material";
 import { useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 
 const Register = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
 
-  const handleRegister = async () => {};
+  const handleRegister = async () => {
+    if (!username || !password) {
+      setError("Username, Email and Password are required!");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:3001/register", {
+        username,
+        email,
+        password,
+      });
+
+      if (response.status === 201) {
+        // Redirect to the Home
+        setSuccess(response.data.message);
+        setUsername("");
+        setEmail("");
+        setPassword("");
+      }
+    } catch (error) {
+      // Type assertion for error handling
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || "Invalid credentials.");
+      } else {
+        setError("An error occurred. Please try again later.");
+      }
+    }
+  };
 
   return (
     <>
+      {error && <Alert severity="error">{error}</Alert>}
+      {success && <Alert severity="success">{success}</Alert>}
       <Container maxWidth="xs">
         <CssBaseline />
         <Box
@@ -39,14 +73,14 @@ const Register = () => {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
-                  name="name"
+                  name="username"
                   required
                   fullWidth
-                  id="name"
-                  label="Name"
+                  id="username"
+                  label="User name"
                   autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </Grid>
 
