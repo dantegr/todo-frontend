@@ -3,22 +3,26 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
-import Cookies from "js-cookie";
+import { useAuth } from "./stores/AuthContext";
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
-    () => Cookies.get("accessToken") !== undefined
-  );
+  const { accessToken } = useAuth();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   ///todo create a validate token route
   useEffect(() => {
-    localStorage.setItem("logged_user", JSON.stringify(isLoggedIn));
-  }, [isLoggedIn]);
+    if (accessToken !== null) {
+      setIsLoggedIn(true);
+    }
+  }, [accessToken]);
 
   return (
     <>
       <Routes>
-        <Route path="login" element={<Login />} />
+        <Route
+          path="login"
+          element={isLoggedIn ? <Navigate to="/" replace /> : <Login />}
+        />
         <Route path="register" element={<Register />} />
         <Route
           path="/"

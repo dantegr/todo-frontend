@@ -12,20 +12,25 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-
-interface LoginResponse {
-  accessToken: string;
-}
+import { useAuth } from "../../stores/AuthContext";
+import Cookies from "js-cookie";
+import { handleLoginApi } from "../../api/userApi";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [isCookieSet, setIsCookieSet] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { accessToken, login } = useAuth();
+
+  useEffect(() => {
+    const userId = Cookies.get("userId");
+    const accessToken = Cookies.get("accessToken");
+    if (userId && accessToken) {
+      login(userId, accessToken);
+    }
+  }, [login]);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -34,35 +39,23 @@ const Login: React.FC = () => {
     }
 
     try {
-      const response = await axios.post<LoginResponse>(
-        "http://localhost:3001/login",
-        {
-          username,
-          password,
-        }
-      );
-
-      const { accessToken } = response.data;
-
-      // Save the token in cookies with a 5-minute expiration
-      const inFiveMinutes = new Date(new Date().getTime() + 5 * 60 * 1000);
-      Cookies.set("accessToken", accessToken, { expires: inFiveMinutes });
-      setIsCookieSet(true);
-    } catch (error) {
-      // Type assertion for error handling
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.message || "Invalid credentials.");
-      } else {
-        setError("An error occurred. Please try again later.");
+      const loginResponse = await handleLoginApi(username, password);
+      login(loginResponse.userId, loginResponse.accessToken);
+    } catch (e) {
+      if (typeof e === "string") {
+        e.toUpperCase(); // works, `e` narrowed to string
+        setError(e);
+      } else if (e instanceof Error) {
+        setError(e.message); // works, `e` narrowed to Error
       }
     }
   };
 
   useEffect(() => {
-    if (isCookieSet) {
+    if (accessToken !== null) {
       navigate("/");
     }
-  }, [isCookieSet, navigate]);
+  }, [accessToken, navigate]);
 
   return (
     <>
