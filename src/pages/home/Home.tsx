@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import Snackbar from "@mui/material/Snackbar";
+import Divider from "@mui/material/Divider";
 import { Alert, List } from "@mui/material";
 import Cookies from "js-cookie";
 import { useAuth } from "../../stores/AuthContext";
@@ -64,6 +65,15 @@ const Home: React.FC = () => {
     setLists(updatedlists);
   };
 
+  const updateListInState = (listId: string | null, updatedList: TodoList) => {
+    const index = lists.findIndex((item) => item._id === listId);
+    if (index === -1) return [...lists];
+
+    const updatedlists = [...lists];
+    updatedlists[index] = updatedList;
+    setLists(updatedlists);
+  };
+
   const handleCloseSnackBar = (event: any, reason: string) => {
     if (reason === "clickaway") {
       return;
@@ -83,6 +93,8 @@ const Home: React.FC = () => {
       const response = await createNewList(userId, accessToken);
       console.log(response);
 
+      const updatedlists = [...lists, response];
+      setLists(updatedlists);
       setSnackOpenState(true);
     } catch (e) {
       console.log(e);
@@ -102,8 +114,9 @@ const Home: React.FC = () => {
                 color="inherit"
                 sx={{
                   border: "2px solid",
+                  transitionDuration: "0.4s",
                   "&:hover": {
-                    backgroundColor: "#00008B",
+                    backgroundColor: "green",
                     color: "white",
                   },
                 }}
@@ -120,11 +133,15 @@ const Home: React.FC = () => {
       </Box>
       <List className="App__TodoList">
         {lists.map((list) => (
-          <ListComp
-            key={list._id}
-            list={list}
-            removeListFromState={removeListFromState}
-          />
+          <>
+            <ListComp
+              key={list._id}
+              list={list}
+              removeListFromState={removeListFromState}
+              updateListInState={updateListInState}
+            />
+            <Divider />
+          </>
         ))}
       </List>
       <Snackbar

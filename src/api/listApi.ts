@@ -52,3 +52,24 @@ export const deleteListFromDb = async (
 
   return response.data;
 };
+
+export const updateFreezeInDb = async (
+  userId: string | null,
+  listId: string | null,
+  frozen: boolean,
+  accessToken: string | null
+): Promise<TodoList> => {
+  const response = await axios.put<TodoList>(
+    `${apiUrl}/updateFreeze`,
+    {
+      userId,
+      listId,
+      frozen,
+    },
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+
+  return response.data;
+};
