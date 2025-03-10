@@ -1,27 +1,26 @@
-import axios from "axios";
-import { TodoList } from "../types/listType";
+import axios, { AxiosResponse } from "axios";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 export const getUserLists = async (
   userId: string | null,
   accessToken: string | null
-): Promise<TodoList[]> => {
-  const response = await axios.get<TodoList[]>(
+): Promise<AxiosResponse> => {
+  const response = await axios.get<AxiosResponse>(
     `${apiUrl}/userlists/${userId}`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
     }
   );
 
-  return response.data;
+  return response;
 };
 
 export const createNewList = async (
   userId: string | null,
   accessToken: string | null
-): Promise<TodoList> => {
-  const response = await axios.post<TodoList>(
+): Promise<AxiosResponse> => {
+  const response = await axios.post<AxiosResponse>(
     `${apiUrl}/createlist`,
     {
       userId,
@@ -31,26 +30,23 @@ export const createNewList = async (
     }
   );
 
-  return response.data;
+  return response;
 };
 
 export const deleteListFromDb = async (
   userId: string | null,
   listId: string | null,
   accessToken: string | null
-): Promise<{ message: string }> => {
-  const response = await axios.delete<{ message: string }>(
-    `${apiUrl}/deletelist`,
-    {
-      data: {
-        userId,
-        listId,
-      },
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
+): Promise<AxiosResponse> => {
+  const response = await axios.delete<AxiosResponse>(`${apiUrl}/deletelist`, {
+    data: {
+      userId,
+      listId,
+    },
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 
-  return response.data;
+  return response;
 };
 
 export const updateFreezeInDb = async (
@@ -58,8 +54,8 @@ export const updateFreezeInDb = async (
   listId: string | null,
   frozen: boolean,
   accessToken: string | null
-): Promise<TodoList> => {
-  const response = await axios.put<TodoList>(
+): Promise<AxiosResponse> => {
+  const response = await axios.put<AxiosResponse>(
     `${apiUrl}/updateFreeze`,
     {
       userId,
@@ -71,5 +67,24 @@ export const updateFreezeInDb = async (
     }
   );
 
-  return response.data;
+  return response;
+};
+
+export const shareSelectedList = async (
+  userEmail: string | null,
+  listId: string | null,
+  accessToken: string | null
+): Promise<AxiosResponse> => {
+  const response = await axios.post<AxiosResponse>(
+    `${apiUrl}/sharelistwith`,
+    {
+      userEmail,
+      listId,
+    },
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+
+  return response;
 };

@@ -6,16 +6,30 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import Snackbar from "@mui/material/Snackbar";
-import Divider from "@mui/material/Divider";
-import { Alert, List } from "@mui/material";
+import Drawer from "@mui/material/Drawer";
+import { Alert, List, useMediaQuery, useTheme } from "@mui/material";
 import Cookies from "js-cookie";
 import { useAuth } from "../../stores/AuthContext";
 import { getUserById } from "../../api/userApi";
 import { getUserLists, createNewList } from "../../api/listApi";
 import ListComp from "./components/ListComp";
+import ListDrawer from "./components/ListDrawer";
 import { TodoList } from "../../types/listType";
+import io from "socket.io-client";
+
+const apiUrl = import.meta.env.VITE_API_URL;
+
+const socket = io(apiUrl, {
+  transports: ["websocket", "polling", "flashsocket"],
+});
+
+socket.on("connect", () => {
+  console.log("socket connected");
+});
 
 const Home: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [snackOpenState, setSnackOpenState] = useState<boolean>(false);
 
   const { userId, accessToken, logout } = useAuth();
@@ -25,13 +39,22 @@ const Home: React.FC = () => {
     email: string;
   } | null>(null);
   const [lists, setLists] = useState<TodoList[]>([]);
+  const [drawerList, setDrawerList] = useState<TodoList | null>(null);
+  const [showDrawer, setShowDrawer] = useState<boolean>(false);
+
+  const joinSocket = (userId: string) => {
+    try {
+      socket.emit("join", userId);
+    } catch (error) {
+      console.error("Error joining socket:", error);
+    }
+  };
 
   useEffect(() => {
     if (userId) {
       const fetchUserData = async () => {
-        // get the data from the api
         const data = await getUserById(userId, accessToken);
-        // convert data to json
+
         return data;
       };
 
@@ -40,21 +63,37 @@ const Home: React.FC = () => {
       });
 
       const fetchListData = async () => {
-        // get the data from the api
-        const data = await getUserLists(userId, accessToken);
-        // convert data to json
-        return data;
+        const response = await getUserLists(userId, accessToken);
+
+        return response.data;
       };
 
       fetchListData().then((result) => {
         setLists(result);
       });
+
+      joinSocket(userId);
+
+      socket.on("listUpdated", (updatedList: TodoList) => {
+        setLists((lists) => {
+          const index = lists.findIndex((item) => item._id === updatedList._id);
+
+          if (index === -1) return [...lists];
+
+          const updatedlists = [...lists];
+          updatedlists[index] = updatedList;
+          return updatedlists;
+        });
+
+        setDrawerList((list) => {
+          if (list && list._id === updatedList._id) {
+            return updatedList;
+          }
+          return list;
+        });
+      });
     }
   }, []);
-
-  useEffect(() => {
-    console.log(lists);
-  }, [lists]);
 
   const removeListFromState = (listId: string | null) => {
     const index = lists.findIndex((item) => item._id === listId);
@@ -67,6 +106,7 @@ const Home: React.FC = () => {
 
   const updateListInState = (listId: string | null, updatedList: TodoList) => {
     const index = lists.findIndex((item) => item._id === listId);
+
     if (index === -1) return [...lists];
 
     const updatedlists = [...lists];
@@ -74,10 +114,7 @@ const Home: React.FC = () => {
     setLists(updatedlists);
   };
 
-  const handleCloseSnackBar = (event: any, reason: string) => {
-    if (reason === "clickaway") {
-      return;
-    }
+  const handleCloseSnackBar = () => {
     setSnackOpenState(false);
   };
 
@@ -88,16 +125,32 @@ const Home: React.FC = () => {
     window.location.reload();
   };
 
+  const handleOpenDrawer = (list: TodoList) => {
+    setDrawerList(list);
+    setShowDrawer(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerList(null);
+    setShowDrawer(false);
+  };
+
   const handleCreateNewList = async () => {
     try {
       const response = await createNewList(userId, accessToken);
-      console.log(response);
-
-      const updatedlists = [...lists, response];
+      const updatedlists = [...lists, response.data];
       setLists(updatedlists);
       setSnackOpenState(true);
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const saveDrawerList = (list: TodoList | null) => {
+    try {
+      socket.emit("updateList", { userId, updatedToDoList: list });
+    } catch (error) {
+      console.error("Error updating list:", error);
     }
   };
 
@@ -133,15 +186,13 @@ const Home: React.FC = () => {
       </Box>
       <List className="App__TodoList">
         {lists.map((list) => (
-          <>
-            <ListComp
-              key={list._id}
-              list={list}
-              removeListFromState={removeListFromState}
-              updateListInState={updateListInState}
-            />
-            <Divider />
-          </>
+          <ListComp
+            key={list._id}
+            list={list}
+            removeListFromState={removeListFromState}
+            updateListInState={updateListInState}
+            handleOpenDrawer={handleOpenDrawer}
+          />
         ))}
       </List>
       <Snackbar
@@ -151,6 +202,24 @@ const Home: React.FC = () => {
       >
         <Alert severity="success">New list was created!</Alert>
       </Snackbar>
+      <Drawer
+        anchor="right"
+        open={showDrawer}
+        sx={{
+          width: isMobile ? "100%" : "40%",
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: isMobile ? "100%" : "40%",
+          },
+        }}
+        onClose={handleCloseDrawer}
+      >
+        <ListDrawer
+          list={drawerList}
+          handleCloseDrawer={handleCloseDrawer}
+          saveDrawerList={saveDrawerList}
+        />
+      </Drawer>
     </>
   );
 };
