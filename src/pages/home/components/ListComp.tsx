@@ -15,6 +15,8 @@ import {
   Box,
   Typography,
   TextField,
+  Checkbox,
+  useMediaQuery,
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -33,18 +35,22 @@ interface IPropps {
   removeListFromState: (listId: string | null) => void;
   updateListInState: (listId: string | null, updatedList: TodoList) => void;
   handleOpenDrawer: (list: TodoList) => void;
+  saveUpdatedList: (list: TodoList) => void;
 }
 const ListComp: React.FC<IPropps> = ({
   list,
   removeListFromState,
   updateListInState,
   handleOpenDrawer,
+  saveUpdatedList,
 }) => {
   const { userId, accessToken } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [showShareDialog, setShowShareDialog] = useState<boolean>(false);
   const [shareEmail, setShareEmail] = useState<string>("");
   const [shareError, setShareError] = useState<string>("");
+
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const deleteList = async (listId: string | null) => {
     try {
@@ -123,6 +129,17 @@ const ListComp: React.FC<IPropps> = ({
         console.log(e.message);
       }
     }
+  };
+
+  const handleComplete = () => {
+    const listToUpdate = list;
+    if (list.completed) {
+      listToUpdate.completed = false;
+    } else {
+      listToUpdate.completed = true;
+    }
+    updateListInState(list._id, listToUpdate);
+    saveUpdatedList(listToUpdate);
   };
 
   return (
@@ -208,7 +225,21 @@ const ListComp: React.FC<IPropps> = ({
         onClick={() => handleOpenDrawer(list)}
       >
         <ListItemButton>
-          <ListItemText primary={<div>{list.title}</div>} />
+          <Checkbox
+            color="success"
+            checked={list.completed}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleComplete();
+            }}
+          />
+          <ListItemText
+            primary={
+              <div>{`${list.title} ${
+                list.completed && !isMobile ? ": COMPLETED" : ""
+              }`}</div>
+            }
+          />
         </ListItemButton>
       </ListItem>
       <Divider />

@@ -146,7 +146,7 @@ const Home: React.FC = () => {
     }
   };
 
-  const saveDrawerList = (list: TodoList | null) => {
+  const saveUpdatedList = (list: TodoList | null) => {
     try {
       socket.emit("updateList", { userId, updatedToDoList: list });
     } catch (error) {
@@ -159,8 +159,12 @@ const Home: React.FC = () => {
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static">
           <Toolbar>
+            <img
+              style={{ maxHeight: "1.6rem", marginRight: "10px" }}
+              src="/src/assets/todo.svg"
+            />
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              {`Welcome to do list ${user?.username}!`}
+              {`Welcome ${user?.username}!`}
             </Typography>
             <Tooltip title="Create new list">
               <Button
@@ -192,6 +196,7 @@ const Home: React.FC = () => {
             removeListFromState={removeListFromState}
             updateListInState={updateListInState}
             handleOpenDrawer={handleOpenDrawer}
+            saveUpdatedList={saveUpdatedList}
           />
         ))}
       </List>
@@ -217,7 +222,7 @@ const Home: React.FC = () => {
         <ListDrawer
           list={drawerList}
           handleCloseDrawer={handleCloseDrawer}
-          saveDrawerList={saveDrawerList}
+          saveDrawerList={saveUpdatedList}
         />
       </Drawer>
     </>

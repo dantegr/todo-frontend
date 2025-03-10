@@ -15,7 +15,7 @@ export interface Subtask {
 }
 
 export interface Item {
-  index: number;
+  index?: number;
   title: string;
   done: boolean;
   cost: number;
@@ -31,6 +31,7 @@ export interface TodoList {
   ownerId: string;
   sharedWith: string[];
   frozen: boolean;
+  completed: boolean;
   items: Item[];
   createdAt: string; // Date string from timestamps
   updatedAt: string; // Date string from timestamps
