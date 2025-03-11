@@ -155,8 +155,8 @@ const Home: React.FC = () => {
   };
 
   return (
-    <>
-      <Box sx={{ flexGrow: 1 }}>
+    <Box display="flex" flexDirection="column" height="100%">
+      <Box>
         <AppBar position="static">
           <Toolbar>
             <img
@@ -188,18 +188,27 @@ const Home: React.FC = () => {
           </Toolbar>
         </AppBar>
       </Box>
-      <List className="App__TodoList">
-        {lists.map((list) => (
-          <ListComp
-            key={list._id}
-            list={list}
-            removeListFromState={removeListFromState}
-            updateListInState={updateListInState}
-            handleOpenDrawer={handleOpenDrawer}
-            saveUpdatedList={saveUpdatedList}
-          />
-        ))}
-      </List>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowX: "hidden",
+          marginBottom: "16px",
+          width: "100%",
+        }}
+      >
+        <List className="App__TodoList">
+          {lists.map((list) => (
+            <ListComp
+              key={list._id}
+              list={list}
+              removeListFromState={removeListFromState}
+              updateListInState={updateListInState}
+              handleOpenDrawer={handleOpenDrawer}
+              saveUpdatedList={saveUpdatedList}
+            />
+          ))}
+        </List>
+      </Box>
       <Snackbar
         open={snackOpenState}
         autoHideDuration={2000}
@@ -225,7 +234,7 @@ const Home: React.FC = () => {
           saveDrawerList={saveUpdatedList}
         />
       </Drawer>
-    </>
+    </Box>
   );
 };
 

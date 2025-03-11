@@ -13,19 +13,29 @@ import {
   ListItem,
   InputLabel,
   FormControl,
+  Box,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Item, CustomField } from "../../../types/listType";
 
 interface IPropps {
   item: Item;
   handleUpdateItem: (item: Item) => void;
+  deleteListItem: (itemId: number) => void;
 }
-const ListTask: React.FC<IPropps> = ({ item, handleUpdateItem }) => {
+const ListTask: React.FC<IPropps> = ({
+  item,
+  handleUpdateItem,
+  deleteListItem,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState<Item>(item);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleChange = (field: keyof Item, value: unknown) => {
     setEditedItem((prev) => ({ ...prev, [field]: value }));
@@ -72,6 +82,17 @@ const ListTask: React.FC<IPropps> = ({ item, handleUpdateItem }) => {
     setIsEditing(false);
   };
 
+  const handleCheckboxChange = (checked: boolean) => {
+    handleChange("done", checked);
+    handleUpdateItem({ ...editedItem, done: checked });
+  };
+
+  const handleDelete = () => {
+    if (item.index !== undefined) {
+      deleteListItem(item.index);
+    }
+  };
+
   useEffect(() => {
     setEditedItem(item);
   }, [item]);
@@ -79,28 +100,45 @@ const ListTask: React.FC<IPropps> = ({ item, handleUpdateItem }) => {
   return (
     <Card
       variant="outlined"
-      sx={{ margin: 2, padding: 2, borderRadius: "8px" }}
+      sx={{ margin: 0.5, padding: 0.5, borderRadius: "8px" }}
     >
       <CardContent>
-        <Checkbox
-          color="success"
-          checked={editedItem.done}
-          onChange={(e) => handleChange("done", e.target.checked)}
-        />
-        <Typography variant="body2">
-          {`${editedItem.title} ${editedItem.done ? ": COMPLETED" : ""}`}
-          <IconButton onClick={() => setIsEditing(!isEditing)}>
-            <EditIcon />
+        <Box display="flex" alignItems="center">
+          <IconButton onClick={() => setIsExpanded(!isExpanded)} size="small">
+            {isExpanded ? (
+              <ExpandLessIcon fontSize="small" />
+            ) : (
+              <ExpandMoreIcon fontSize="small" />
+            )}
           </IconButton>
-        </Typography>
-        {isEditing ? (
+          <Checkbox
+            color="success"
+            checked={editedItem.done}
+            onChange={(e) => handleCheckboxChange(e.target.checked)}
+            size="small"
+          />
+          <Typography
+            variant="body2"
+            sx={{ flexGrow: 1, fontSize: "0.8rem", fontWeight: "bold" }}
+          >
+            {`${editedItem.title} ${editedItem.done ? ": COMPLETED" : ""}`}
+          </Typography>
+          <IconButton onClick={() => setIsEditing(!isEditing)} size="small">
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton onClick={handleDelete} size="small">
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+        {isEditing && (
           <>
             <TextField
               label="Title"
               value={editedItem.title}
               onChange={(e) => handleChange("title", e.target.value)}
               fullWidth
-              margin="normal"
+              margin="dense"
+              size="small"
             />
             <TextField
               label="Cost"
@@ -108,9 +146,10 @@ const ListTask: React.FC<IPropps> = ({ item, handleUpdateItem }) => {
               value={editedItem.cost}
               onChange={(e) => handleChange("cost", parseFloat(e.target.value))}
               fullWidth
-              margin="normal"
+              margin="dense"
+              size="small"
             />
-            <FormControl fullWidth>
+            <FormControl fullWidth margin="dense" size="small">
               <InputLabel id="simple-select-label">Filter</InputLabel>
               <Select
                 label="Filter"
@@ -124,7 +163,7 @@ const ListTask: React.FC<IPropps> = ({ item, handleUpdateItem }) => {
                 <MenuItem value="item">Item</MenuItem>
               </Select>
             </FormControl>
-            <Typography variant="subtitle1">Custom Fields</Typography>
+            <Typography variant="subtitle2">Custom Fields</Typography>
             {editedItem.customFields?.map((field, index) => (
               <TextField
                 key={index}
@@ -134,35 +173,42 @@ const ListTask: React.FC<IPropps> = ({ item, handleUpdateItem }) => {
                   handleCustomFieldChange(index, "title", e.target.value)
                 }
                 fullWidth
-                margin="normal"
+                margin="dense"
+                size="small"
               />
             ))}
-            <Button startIcon={<AddIcon />} onClick={addCustomField}>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={addCustomField}
+              size="small"
+            >
               Add Custom Field
             </Button>
-            <Typography variant="subtitle1">Subtasks</Typography>
+            <Typography variant="subtitle2">Subtasks</Typography>
             {/* {editedItem.subtasks.map((subtask, index) => (
               <ListTask key={index} item={subtask} />
             ))} */}
-            <Button startIcon={<AddIcon />} onClick={addSubtask}>
+            <Button startIcon={<AddIcon />} onClick={addSubtask} size="small">
               Add Subtask
             </Button>
             <Button
               startIcon={<SaveIcon />}
               onClick={saveItem}
-              sx={{ marginTop: 2 }}
+              sx={{ marginTop: 1 }}
+              size="small"
             >
               Save
             </Button>
           </>
-        ) : (
-          <>
-            <List>
-              {editedItem.subtasks.map((subtask, index) => (
-                <ListItem key={index}>{subtask.title}</ListItem>
-              ))}
-            </List>
-          </>
+        )}
+        {isExpanded && (
+          <List>
+            {editedItem.subtasks.map((subtask, index) => (
+              <ListItem key={index} sx={{ fontSize: "0.8rem" }}>
+                {subtask.title}
+              </ListItem>
+            ))}
+          </List>
         )}
       </CardContent>
     </Card>

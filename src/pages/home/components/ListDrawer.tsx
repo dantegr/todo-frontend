@@ -14,7 +14,21 @@ import {
   MenuItem,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import ListTask from "./ListTask";
+import {
+  DndContext,
+  closestCenter,
+  TouchSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import SortableItem from "./SortableItem";
 
 interface IPropps {
   list: TodoList | null;
@@ -28,6 +42,19 @@ const ListDrawer: React.FC<IPropps> = ({
   saveDrawerList,
 }) => {
   const [updatedList, setUpdatedList] = useState<TodoList | null>(list);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (updatedList) {
@@ -57,15 +84,6 @@ const ListDrawer: React.FC<IPropps> = ({
     }
   };
 
-  /*  const handleReorder = (fromIndex: number, toIndex: number) => {
-    if (updatedList) {
-      const updatedItems = updatedList.items;
-      const [movedItem] = updatedItems.splice(fromIndex, 1);
-      updatedItems.splice(toIndex, 0, movedItem);
-      setUpdatedList({ ...updatedList, items: updatedItems });
-    }
-  }; */
-
   const handleUpdateItem = (item: Item) => {
     const newItems: Item[] = updatedList!.items;
     const itemIndex = newItems.findIndex((el) => el.index === item.index);
@@ -73,6 +91,32 @@ const ListDrawer: React.FC<IPropps> = ({
 
     if (updatedList) {
       setUpdatedList({ ...updatedList, items: newItems ? newItems : [] });
+    }
+  };
+
+  const deleteListItem = (itemId: number) => {
+    if (updatedList) {
+      const newItems = updatedList.items.filter(
+        (item) => item.index !== itemId
+      );
+      setUpdatedList({ ...updatedList, items: newItems });
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setUpdatedList((prevList) => {
+        if (!prevList) return prevList;
+        const oldIndex = prevList.items.findIndex(
+          (item) => item.index === active.id
+        );
+        const newIndex = prevList.items.findIndex(
+          (item) => item.index === over.id
+        );
+        const newItems = arrayMove(prevList.items, oldIndex, newIndex);
+        return { ...prevList, items: newItems };
+      });
     }
   };
 
@@ -177,16 +221,56 @@ const ListDrawer: React.FC<IPropps> = ({
       </Box>
       <Divider />
 
-      <List className="App__TodoListItems">
-        {updatedList?.items.map((item) => (
-          <ListTask item={item} handleUpdateItem={handleUpdateItem} />
-        ))}
-      </List>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowX: "hidden",
+          marginBottom: "16px",
+          width: "100%",
+        }}
+      >
+        {!(updatedList?.completed || updatedList?.frozen) ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={
+                (updatedList?.items || [])
+                  .map((item) => item.index)
+                  .filter((index) => index !== undefined) as number[]
+              }
+              strategy={verticalListSortingStrategy}
+            >
+              <List className="App__TodoListItems">
+                {updatedList?.items.map((item) => (
+                  <SortableItem
+                    key={item.index}
+                    item={item}
+                    handleUpdateItem={handleUpdateItem}
+                    deleteListItem={deleteListItem}
+                  />
+                ))}
+              </List>
+            </SortableContext>
+          </DndContext>
+        ) : (
+          <List className="App__TodoListItems">
+            {updatedList?.items.map((item) => (
+              <SortableItem
+                key={item.index}
+                item={item}
+                handleUpdateItem={handleUpdateItem}
+                deleteListItem={deleteListItem}
+              />
+            ))}
+          </List>
+        )}
+      </Box>
 
       <Box
         sx={{
-          position: "absolute",
-          bottom: 0,
           backgroundColor: "white",
           padding: "16px",
           boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
