@@ -9,11 +9,12 @@ import {
   Select,
   MenuItem,
   IconButton,
-  List,
-  ListItem,
   InputLabel,
   FormControl,
   Box,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -21,6 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import { Item, CustomField } from "../../../types/listType";
 
 interface IPropps {
@@ -100,35 +102,60 @@ const ListTask: React.FC<IPropps> = ({
   return (
     <Card
       variant="outlined"
-      sx={{ margin: 0.5, padding: 0.5, borderRadius: "8px" }}
+      sx={{
+        margin: 0.5,
+        padding: 0.5,
+        borderRadius: "8px",
+        borderColor:
+          editedItem.type === "task"
+            ? "brown"
+            : editedItem.type === "food"
+            ? "green"
+            : editedItem.type === "item"
+            ? "blue"
+            : "default",
+      }}
     >
       <CardContent>
-        <Box display="flex" alignItems="center">
-          <IconButton onClick={() => setIsExpanded(!isExpanded)} size="small">
-            {isExpanded ? (
-              <ExpandLessIcon fontSize="small" />
+        <Box display="flex" alignItems="center" justifyContent={"flex-end"}>
+          {!isEditing && (
+            <>
+              <IconButton
+                onClick={() => setIsExpanded(!isExpanded)}
+                size="small"
+              >
+                {isExpanded ? (
+                  <ExpandLessIcon fontSize="small" />
+                ) : (
+                  <ExpandMoreIcon fontSize="small" />
+                )}
+              </IconButton>
+              <Checkbox
+                color="success"
+                checked={editedItem.done}
+                onChange={(e) => handleCheckboxChange(e.target.checked)}
+                size="small"
+              />
+              <Typography
+                variant="body2"
+                sx={{ flexGrow: 1, fontSize: "0.8rem", fontWeight: "bold" }}
+              >
+                {`${editedItem.title} ${editedItem.done ? ": COMPLETED" : ""}`}
+              </Typography>
+            </>
+          )}
+          <IconButton onClick={() => setIsEditing(!isEditing)} size="small">
+            {isEditing ? (
+              <CloseIcon fontSize="small" />
             ) : (
-              <ExpandMoreIcon fontSize="small" />
+              <EditIcon fontSize="small" />
             )}
           </IconButton>
-          <Checkbox
-            color="success"
-            checked={editedItem.done}
-            onChange={(e) => handleCheckboxChange(e.target.checked)}
-            size="small"
-          />
-          <Typography
-            variant="body2"
-            sx={{ flexGrow: 1, fontSize: "0.8rem", fontWeight: "bold" }}
-          >
-            {`${editedItem.title} ${editedItem.done ? ": COMPLETED" : ""}`}
-          </Typography>
-          <IconButton onClick={() => setIsEditing(!isEditing)} size="small">
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton onClick={handleDelete} size="small">
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {!isEditing && (
+            <IconButton onClick={handleDelete} size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
         {isEditing && (
           <>
@@ -150,9 +177,9 @@ const ListTask: React.FC<IPropps> = ({
               size="small"
             />
             <FormControl fullWidth margin="dense" size="small">
-              <InputLabel id="simple-select-label">Filter</InputLabel>
+              <InputLabel id="simple-select-label">Type</InputLabel>
               <Select
-                label="Filter"
+                label="Type"
                 value={editedItem.type || "---"}
                 onChange={(e) => handleChange("type", e.target.value)}
                 fullWidth
@@ -165,17 +192,67 @@ const ListTask: React.FC<IPropps> = ({
             </FormControl>
             <Typography variant="subtitle2">Custom Fields</Typography>
             {editedItem.customFields?.map((field, index) => (
-              <TextField
-                key={index}
-                label="Field Title"
-                value={field.title}
-                onChange={(e) =>
-                  handleCustomFieldChange(index, "title", e.target.value)
-                }
-                fullWidth
-                margin="dense"
-                size="small"
-              />
+              <>
+                <Box key={index} display="flex" alignItems="center" gap={1}>
+                  <TextField
+                    label="Field Title"
+                    value={field.title}
+                    onChange={(e) =>
+                      handleCustomFieldChange(index, "title", e.target.value)
+                    }
+                    fullWidth
+                    margin="dense"
+                    size="small"
+                  />
+                  <TextField
+                    label="Field Value"
+                    value={field.value}
+                    onChange={(e) =>
+                      handleCustomFieldChange(index, "value", e.target.value)
+                    }
+                    fullWidth
+                    margin="dense"
+                    size="small"
+                  />
+                  <IconButton
+                    onClick={() => {
+                      const newCustomFields = [
+                        ...(editedItem.customFields || []),
+                      ];
+                      newCustomFields.splice(index, 1);
+                      setEditedItem((prev) => ({
+                        ...prev,
+                        customFields: newCustomFields,
+                      }));
+                    }}
+                    size="small"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                <RadioGroup
+                  row
+                  value={field.required ? "required" : "optional"}
+                  onChange={(e) =>
+                    handleCustomFieldChange(
+                      index,
+                      "required",
+                      e.target.value === "required"
+                    )
+                  }
+                >
+                  <FormControlLabel
+                    value="required"
+                    control={<Radio size="small" />}
+                    label="Required"
+                  />
+                  <FormControlLabel
+                    value="optional"
+                    control={<Radio size="small" />}
+                    label="Optional"
+                  />
+                </RadioGroup>
+              </>
             ))}
             <Button
               startIcon={<AddIcon />}
@@ -201,14 +278,37 @@ const ListTask: React.FC<IPropps> = ({
             </Button>
           </>
         )}
-        {isExpanded && (
-          <List>
-            {editedItem.subtasks.map((subtask, index) => (
-              <ListItem key={index} sx={{ fontSize: "0.8rem" }}>
-                {subtask.title}
-              </ListItem>
+        {isExpanded && !isEditing && (
+          <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={2}>
+            <Box display="flex" justifyContent="center">
+              <Typography
+                variant="body2"
+                sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
+              >
+                {`Type: ${editedItem.type}`}
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="center">
+              <Typography
+                variant="body2"
+                sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
+              >
+                {`Cost: ${editedItem.cost}`}
+              </Typography>
+            </Box>
+            {editedItem.customFields?.map((field, index) => (
+              <Box key={index} display="flex" justifyContent="center">
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
+                >
+                  {`${field.title}: ${field.value}${
+                    field.required ? " *" : ""
+                  }`}
+                </Typography>
+              </Box>
             ))}
-          </List>
+          </Box>
         )}
       </CardContent>
     </Card>
