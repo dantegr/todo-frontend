@@ -7,7 +7,7 @@ import { Item } from "../../../types/listType";
 interface SortableItemProps {
   item: Item;
   handleUpdateItem: (item: Item) => void;
-  deleteListItem: (itemId: number) => void;
+  deleteListItem: (itemId: string) => void;
 }
 
 const SortableItem: React.FC<SortableItemProps> = ({
@@ -17,7 +17,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
-      id: item.index ?? `item-${Math.random()}`,
+      id: item.id,
     });
 
   const style = {

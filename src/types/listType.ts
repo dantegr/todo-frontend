@@ -15,7 +15,7 @@ export interface Subtask {
 }
 
 export interface Item {
-  index?: number;
+  id: string;
   title: string;
   done: boolean;
   cost: number;

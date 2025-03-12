@@ -26,7 +26,7 @@ import { Item, CustomField } from "../../../types/listType";
 interface IPropps {
   item: Item;
   handleUpdateItem: (item: Item) => void;
-  deleteListItem: (itemId: number) => void;
+  deleteListItem: (itemId: string) => void;
 }
 const ListTask: React.FC<IPropps> = ({
   item,
@@ -88,8 +88,8 @@ const ListTask: React.FC<IPropps> = ({
   };
 
   const handleDelete = () => {
-    if (item.index !== undefined) {
-      deleteListItem(item.index);
+    if (item.id !== undefined) {
+      deleteListItem(item.id);
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { TodoList, Item } from "../../../types/listType";
+import { v4 as uuidv4 } from "uuid";
 import {
   Box,
   IconButton,
@@ -67,9 +68,8 @@ const ListDrawer: React.FC<IPropps> = ({
   };
 
   const handleAddTask = () => {
-    const newIndex = updatedList?.items.length;
     const newItem: Item = {
-      index: newIndex!,
+      id: uuidv4(),
       title: "New Item",
       done: false,
       cost: 0,
@@ -86,7 +86,7 @@ const ListDrawer: React.FC<IPropps> = ({
 
   const handleUpdateItem = (item: Item) => {
     const newItems: Item[] = updatedList!.items;
-    const itemIndex = newItems.findIndex((el) => el.index === item.index);
+    const itemIndex = newItems.findIndex((el) => el.id === item.id);
     newItems[itemIndex] = item;
 
     if (updatedList) {
@@ -94,11 +94,9 @@ const ListDrawer: React.FC<IPropps> = ({
     }
   };
 
-  const deleteListItem = (itemId: number) => {
+  const deleteListItem = (itemId: string) => {
     if (updatedList) {
-      const newItems = updatedList.items.filter(
-        (item) => item.index !== itemId
-      );
+      const newItems = updatedList.items.filter((item) => item.id !== itemId);
       setUpdatedList({ ...updatedList, items: newItems });
     }
   };
@@ -109,10 +107,10 @@ const ListDrawer: React.FC<IPropps> = ({
       setUpdatedList((prevList) => {
         if (!prevList) return prevList;
         const oldIndex = prevList.items.findIndex(
-          (item) => item.index === active.id
+          (item) => item.id === active.id
         );
         const newIndex = prevList.items.findIndex(
-          (item) => item.index === over.id
+          (item) => item.id === over.id
         );
         const newItems = arrayMove(prevList.items, oldIndex, newIndex);
         return { ...prevList, items: newItems };
@@ -238,15 +236,15 @@ const ListDrawer: React.FC<IPropps> = ({
             <SortableContext
               items={
                 (updatedList?.items || [])
-                  .map((item) => item.index)
-                  .filter((index) => index !== undefined) as number[]
+                  .map((item) => item.id)
+                  .filter((id) => id !== undefined) as string[]
               }
               strategy={verticalListSortingStrategy}
             >
               <List className="App__TodoListItems">
                 {updatedList?.items.map((item) => (
                   <SortableItem
-                    key={item.index}
+                    key={item.id}
                     item={item}
                     handleUpdateItem={handleUpdateItem}
                     deleteListItem={deleteListItem}
@@ -259,7 +257,7 @@ const ListDrawer: React.FC<IPropps> = ({
           <List className="App__TodoListItems">
             {updatedList?.items.map((item) => (
               <SortableItem
-                key={item.index}
+                key={item.id}
                 item={item}
                 handleUpdateItem={handleUpdateItem}
                 deleteListItem={deleteListItem}

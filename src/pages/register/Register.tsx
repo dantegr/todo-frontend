@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   Button,
   Container,
@@ -8,8 +7,9 @@ import {
   TextField,
   Typography,
   Alert,
+  Card,
 } from "@mui/material";
-import { LockOutlined } from "@mui/icons-material";
+
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -65,9 +65,23 @@ const Register = () => {
             alignItems: "center",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: "primary.light" }}>
-            <LockOutlined />
-          </Avatar>
+          <Card
+            variant="outlined"
+            sx={{ margin: 0.5, padding: 0.5, borderRadius: "8px" }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img
+                style={{ maxHeight: "3rem", marginRight: "10px" }}
+                src="/src/assets/todo.svg"
+              />
+              <Typography variant="h4"> To Do App</Typography>
+            </Box>
+          </Card>
           <Typography variant="h5">Register</Typography>
           <Box sx={{ mt: 3 }}>
             <Grid container spacing={2}>

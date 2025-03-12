@@ -1,14 +1,13 @@
-import { LockOutlined } from "@mui/icons-material";
 import {
   Container,
   CssBaseline,
   Box,
-  Avatar,
   Typography,
   TextField,
   Button,
   Grid,
   Alert,
+  Card,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -70,9 +69,23 @@ const Login: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: "primary.light" }}>
-            <LockOutlined />
-          </Avatar>
+          <Card
+            variant="outlined"
+            sx={{ margin: 0.5, padding: 0.5, borderRadius: "8px" }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img
+                style={{ maxHeight: "3rem", marginRight: "10px" }}
+                src="/src/assets/todo.svg"
+              />
+              <Typography variant="h4"> To Do App</Typography>
+            </Box>
+          </Card>
           <Typography variant="h5">Login</Typography>
           <Box sx={{ mt: 1 }}>
             <TextField
