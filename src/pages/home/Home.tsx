@@ -7,6 +7,11 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import Snackbar from "@mui/material/Snackbar";
 import Drawer from "@mui/material/Drawer";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
 import { Alert, List, useMediaQuery, useTheme } from "@mui/material";
 import Cookies from "js-cookie";
 import { useAuth } from "../../stores/AuthContext";
@@ -31,6 +36,8 @@ const Home: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [snackOpenState, setSnackOpenState] = useState<boolean>(false);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [listTitle, setListTitle] = useState<string>("");
 
   const { userId, accessToken, logout } = useAuth();
   const [user, setUser] = useState<{
@@ -137,7 +144,7 @@ const Home: React.FC = () => {
 
   const handleCreateNewList = async () => {
     try {
-      const response = await createNewList(userId, accessToken);
+      const response = await createNewList(userId, listTitle, accessToken);
       const updatedlists = [...lists, response.data];
       setLists(updatedlists);
       setSnackOpenState(true);
@@ -152,6 +159,20 @@ const Home: React.FC = () => {
     } catch (error) {
       console.error("Error updating list:", error);
     }
+  };
+
+  const handleOpenDialog = () => {
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setListTitle("");
+  };
+
+  const handleConfirmCreateList = () => {
+    handleCreateNewList();
+    handleCloseDialog();
   };
 
   return (
@@ -177,7 +198,7 @@ const Home: React.FC = () => {
                     color: "white",
                   },
                 }}
-                onClick={handleCreateNewList}
+                onClick={handleOpenDialog}
               >
                 +
               </Button>
@@ -234,6 +255,31 @@ const Home: React.FC = () => {
           saveDrawerList={saveUpdatedList}
         />
       </Drawer>
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Create New List</DialogTitle>
+        <DialogContent>
+          <Typography>Input a title for your new list:</Typography>
+          <TextField
+            label="List Title"
+            value={listTitle}
+            onChange={(e) => setListTitle(e.target.value)}
+            fullWidth
+            margin="dense"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmCreateList}
+            variant="contained"
+            color="success"
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

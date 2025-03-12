@@ -285,7 +285,7 @@ const ListTask: React.FC<IPropps> = ({
                 variant="body2"
                 sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
               >
-                {`Type: ${editedItem.type}`}
+                {`Type: ${editedItem.type ?? "---"}`}
               </Typography>
             </Box>
             <Box display="flex" justifyContent="center">

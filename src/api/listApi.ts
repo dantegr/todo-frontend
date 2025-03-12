@@ -18,12 +18,14 @@ export const getUserLists = async (
 
 export const createNewList = async (
   userId: string | null,
+  listTitle: string | null,
   accessToken: string | null
 ): Promise<AxiosResponse> => {
   const response = await axios.post<AxiosResponse>(
     `${apiUrl}/createlist`,
     {
       userId,
+      listTitle,
     },
     {
       headers: { Authorization: `Bearer ${accessToken}` },
