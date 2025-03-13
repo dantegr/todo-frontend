@@ -1,16 +1,13 @@
 export interface CustomField {
   title: string;
   value: string | number | boolean;
-  required: boolean;
 }
 
 export interface Subtask {
+  id: string;
   title: string;
   done: boolean;
-  cost: number;
   required: boolean;
-  type?: string;
-  customFields?: CustomField[];
   subtasks?: Subtask[]; // Recursive type for nesting
 }
 

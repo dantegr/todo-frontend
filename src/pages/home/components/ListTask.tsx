@@ -12,9 +12,7 @@ import {
   InputLabel,
   FormControl,
   Box,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
+  Divider,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -23,7 +21,13 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
-import { Item, CustomField } from "../../../types/listType";
+import { Item, CustomField, Subtask } from "../../../types/listType";
+import SubTaskItem from "./SubTaskItem";
+import { v4 as uuidv4 } from "uuid";
+import {
+  removeSubtaskRecursively,
+  updateSubtaskRecursively,
+} from "../../../utils/utils";
 
 interface IPropps {
   item: Item;
@@ -35,9 +39,9 @@ const ListTask: React.FC<IPropps> = ({
   handleUpdateItem,
   deleteListItem,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedItem, setEditedItem] = useState<Item>(item);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const handleChange = (field: keyof Item, value: unknown) => {
     setEditedItem((prev) => ({ ...prev, [field]: value }));
@@ -53,12 +57,6 @@ const ListTask: React.FC<IPropps> = ({
     setEditedItem((prev) => ({ ...prev, customFields: newCustomFields }));
   };
 
-  /*   const handleSubtaskChange = (index: number, updatedSubtask: Subtask) => {
-    const newSubtasks = [...editedItem.subtasks];
-    newSubtasks[index] = updatedSubtask;
-    setEditedItem((prev) => ({ ...prev, subtasks: newSubtasks }));
-  }; */
-
   const addCustomField = () => {
     setEditedItem((prev) => ({
       ...prev,
@@ -73,8 +71,14 @@ const ListTask: React.FC<IPropps> = ({
     setEditedItem((prev) => ({
       ...prev,
       subtasks: [
-        ...prev.subtasks,
-        { title: "New Subtask", done: false, cost: 0, required: false },
+        ...(prev.subtasks || []),
+        {
+          id: uuidv4(),
+          title: "New Subtask",
+          done: false,
+          cost: 0,
+          required: false,
+        },
       ],
     }));
   };
@@ -99,6 +103,48 @@ const ListTask: React.FC<IPropps> = ({
     setEditedItem(item);
   }, [item]);
 
+  const updateSubTaskBasedOnId = (updatedSubtask: Subtask) => {
+    const updatedSubtasks = updateSubtaskRecursively(
+      editedItem.subtasks || [],
+      updatedSubtask
+    );
+
+    handleUpdateItem({
+      ...editedItem,
+      subtasks: updatedSubtasks,
+    });
+  };
+
+  const renderSubtasks = (subtasks: Subtask[]) => (
+    <ul style={{ listStyleType: "none", paddingLeft: "1.5em" }}>
+      {subtasks.map((subtask: Subtask, index: number) => (
+        <li key={subtask.id || index}>
+          <Box display="flex" alignItems="center">
+            <Checkbox
+              checked={subtask.done}
+              onChange={(e) => {
+                const updatedSubtask = {
+                  ...subtask,
+                  done: e.target.checked,
+                };
+                updateSubTaskBasedOnId(updatedSubtask);
+                //saveItem();
+              }}
+              size="small"
+            />
+            <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
+              {subtask.title}
+              {subtask.required ? " *" : ""}
+            </Typography>
+          </Box>
+          {subtask.subtasks?.length
+            ? renderSubtasks(subtask.subtasks || [])
+            : null}
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <Card
       variant="outlined"
@@ -114,6 +160,18 @@ const ListTask: React.FC<IPropps> = ({
             : editedItem.type === "item"
             ? "blue"
             : "default",
+        overflow: "auto",
+        scrollbarWidth: "thin", // For Firefox
+        "&::-webkit-scrollbar": {
+          width: "0.4em",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(0,0,0,.1)",
+          borderRadius: "10px",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: "rgba(0,0,0,.2)",
+        },
       }}
     >
       <CardContent>
@@ -171,7 +229,20 @@ const ListTask: React.FC<IPropps> = ({
               label="Cost"
               type="number"
               value={editedItem.cost}
-              onChange={(e) => handleChange("cost", parseFloat(e.target.value))}
+              onWheel={(event) => {
+                event.preventDefault();
+              }}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "" || !isNaN(Number(value))) {
+                  handleChange("cost", value === "" ? "" : Number(value));
+                }
+              }}
+              slotProps={{
+                htmlInput: {
+                  min: 0,
+                },
+              }}
               fullWidth
               margin="dense"
               size="small"
@@ -190,7 +261,23 @@ const ListTask: React.FC<IPropps> = ({
                 <MenuItem value="item">Item</MenuItem>
               </Select>
             </FormControl>
-            <Typography variant="subtitle2">Custom Fields</Typography>
+            <Divider sx={{ margin: "8px 0" }} />
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent={"space-between"}
+            >
+              <Typography variant="subtitle2">Custom Fields</Typography>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<AddIcon />}
+                onClick={addCustomField}
+                size="small"
+              >
+                Add Custom Field
+              </Button>
+            </Box>
             {editedItem.customFields?.map((field, index) => (
               <>
                 <Box key={index} display="flex" alignItems="center" gap={1}>
@@ -230,48 +317,60 @@ const ListTask: React.FC<IPropps> = ({
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
-                <RadioGroup
-                  row
-                  value={field.required ? "required" : "optional"}
-                  onChange={(e) =>
-                    handleCustomFieldChange(
-                      index,
-                      "required",
-                      e.target.value === "required"
-                    )
-                  }
-                >
-                  <FormControlLabel
-                    value="required"
-                    control={<Radio size="small" />}
-                    label="Required"
-                  />
-                  <FormControlLabel
-                    value="optional"
-                    control={<Radio size="small" />}
-                    label="Optional"
-                  />
-                </RadioGroup>
+              </>
+            ))}
+            <Divider sx={{ margin: "8px 0" }} />
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent={"space-between"}
+            >
+              <Typography variant="subtitle2">Subtasks</Typography>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<AddIcon />}
+                onClick={addSubtask}
+                size="small"
+              >
+                Add Subtask
+              </Button>
+            </Box>
+            {editedItem.subtasks?.map((subtask) => (
+              <>
+                <SubTaskItem
+                  key={subtask.id}
+                  subtask={subtask}
+                  onUpdate={(updatedSubtask) => {
+                    const updatedSubtasks = [...(editedItem.subtasks || [])];
+                    const index = updatedSubtasks.findIndex(
+                      (sub) => sub.id === updatedSubtask.id
+                    );
+                    if (index !== -1) {
+                      updatedSubtasks[index] = updatedSubtask;
+                      handleChange("subtasks", updatedSubtasks);
+                    }
+                  }}
+                  onDelete={(updatedSubtask) => {
+                    const updatedSubtasks = removeSubtaskRecursively(
+                      editedItem.subtasks || [],
+                      updatedSubtask
+                    );
+                    handleChange("subtasks", updatedSubtasks);
+                  }}
+                />
+                <Divider />
               </>
             ))}
             <Button
-              startIcon={<AddIcon />}
-              onClick={addCustomField}
-              size="small"
-            >
-              Add Custom Field
-            </Button>
-            <Typography variant="subtitle2">Subtasks</Typography>
-            {/* {editedItem.subtasks.map((subtask, index) => (
-              <ListTask key={index} item={subtask} />
-            ))} */}
-            <Button startIcon={<AddIcon />} onClick={addSubtask} size="small">
-              Add Subtask
-            </Button>
-            <Button
+              variant="contained"
               startIcon={<SaveIcon />}
               onClick={saveItem}
-              sx={{ marginTop: 1 }}
+              sx={{
+                width: "100%",
+                marginTop: "8px",
+                padding: "12px",
+              }}
               size="small"
             >
               Save
@@ -302,12 +401,16 @@ const ListTask: React.FC<IPropps> = ({
                   variant="body2"
                   sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
                 >
-                  {`${field.title}: ${field.value}${
-                    field.required ? " *" : ""
-                  }`}
+                  {`${field.title}: ${field.value}`}
                 </Typography>
               </Box>
             ))}
+            {editedItem.subtasks.length > 0 && (
+              <Box gridColumn="span 2">
+                <Typography variant="subtitle2">Subtasks:</Typography>
+                {renderSubtasks(editedItem.subtasks || [])}
+              </Box>
+            )}
           </Box>
         )}
       </CardContent>

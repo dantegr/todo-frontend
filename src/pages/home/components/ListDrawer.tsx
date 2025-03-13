@@ -43,6 +43,7 @@ const ListDrawer: React.FC<IPropps> = ({
   saveDrawerList,
 }) => {
   const [updatedList, setUpdatedList] = useState<TodoList | null>(list);
+  const [filter, setFilter] = useState<string>("none");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -118,6 +119,12 @@ const ListDrawer: React.FC<IPropps> = ({
     }
   };
 
+  const filteredItems = updatedList?.items.filter((item) => {
+    if (filter === "completed") return item.done;
+    if (filter === "in_progress") return !item.done;
+    return true;
+  });
+
   useEffect(() => {
     setUpdatedList(list);
   }, [list]);
@@ -186,20 +193,34 @@ const ListDrawer: React.FC<IPropps> = ({
           gap: "8px",
         }}
       >
+        <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+          {`Total Cost: ${updatedList?.items.reduce(
+            (total, item) => total + (item.cost || 0),
+            0
+          )}`}
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          padding: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
         <Box sx={{ minWidth: 150 }}>
           <FormControl fullWidth>
             <InputLabel id="simple-select-label">Filter</InputLabel>
             <Select
               label="Filter"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
               defaultValue={"none"}
               inputProps={{
                 name: "Filter",
                 id: "uncontrolled-native",
               }}
               disabled={updatedList?.completed || updatedList?.frozen}
-              onChange={(e) => {
-                console.log(e.target.value);
-              }}
             >
               <MenuItem value={"none"}>None</MenuItem>
               <MenuItem value={"completed"}>Completed</MenuItem>
@@ -225,9 +246,14 @@ const ListDrawer: React.FC<IPropps> = ({
           overflowX: "hidden",
           marginBottom: "16px",
           width: "100%",
+          overflowY: "auto",
         }}
       >
-        {!(updatedList?.completed || updatedList?.frozen) ? (
+        {!(
+          updatedList?.completed ||
+          updatedList?.frozen ||
+          filter !== "none"
+        ) ? (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -242,7 +268,7 @@ const ListDrawer: React.FC<IPropps> = ({
               strategy={verticalListSortingStrategy}
             >
               <List className="App__TodoListItems">
-                {updatedList?.items.map((item) => (
+                {filteredItems?.map((item) => (
                   <SortableItem
                     key={item.id}
                     item={item}
@@ -255,7 +281,7 @@ const ListDrawer: React.FC<IPropps> = ({
           </DndContext>
         ) : (
           <List className="App__TodoListItems">
-            {updatedList?.items.map((item) => (
+            {filteredItems?.map((item) => (
               <SortableItem
                 key={item.id}
                 item={item}
