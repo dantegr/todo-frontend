@@ -47,19 +47,11 @@ describe("Login Component", () => {
     expect(loginSpy).toHaveBeenCalledWith("testuser", "password");
   });
 
-  /*  it("should show error message on login failure", async () => {
+  it("should show error message on login failure", async () => {
     const loginSpy = vi.spyOn(userApi, "handleLoginApi");
     const errorMessage = "Invalid credentials";
-    const axiosError = {
-      isAxiosError: true,
-      response: {
-        data: {
-          error: errorMessage,
-        },
-      },
-    } as AxiosError;
 
-    loginSpy.mockRejectedValueOnce(axiosError);
+    loginSpy.mockRejectedValueOnce(errorMessage);
 
     fireEvent.change(screen.getByLabelText(/user name/i), {
       target: { value: "wronguser" },
@@ -70,7 +62,7 @@ describe("Login Component", () => {
     fireEvent.click(screen.getByRole("button", { name: /login/i }));
 
     expect(await screen.findByText(errorMessage)).toBeInTheDocument();
-  }); */
+  });
 
   it("should return error message when username or password is missing", async () => {
     fireEvent.change(screen.getByLabelText(/user name/i), {

@@ -42,9 +42,7 @@ const Login: React.FC = () => {
       const loginResponse = await handleLoginApi(username, password);
       login(loginResponse.userId, loginResponse.accessToken);
     } catch (e) {
-      console.log(e);
       if (typeof e === "string") {
-        e.toUpperCase(); // works, `e` narrowed to string
         setError(e);
       } else if (e instanceof AxiosError) {
         setError(e.response?.data?.error); // works, `e` narrowed to Error
