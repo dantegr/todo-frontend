@@ -49,6 +49,7 @@ const SubTaskItem: React.FC<SubtaskProps> = ({
     <Box display="flex" flexDirection="column" gap={1} ml={2}>
       <Box display="flex" alignItems="center" gap={1}>
         <TextField
+          data-testid="subtask-title-input"
           label="Subtask Title"
           value={localSubtask.title}
           onChange={(e) => handleChange("title", e.target.value)}
@@ -57,6 +58,7 @@ const SubTaskItem: React.FC<SubtaskProps> = ({
           size="small"
         />
         <RadioGroup
+          data-testid="subtask-required-group"
           row
           value={localSubtask.required ? "required" : "optional"}
           onChange={(e) =>
@@ -64,20 +66,30 @@ const SubTaskItem: React.FC<SubtaskProps> = ({
           }
         >
           <FormControlLabel
+            data-testid="subtask-required-radio"
             value="required"
             control={<Radio size="small" />}
             label="Required"
           />
           <FormControlLabel
+            data-testid="subtask-optional-radio"
             value="optional"
             control={<Radio size="small" />}
             label="Optional"
           />
         </RadioGroup>
-        <IconButton onClick={() => onDelete(localSubtask)} size="small">
+        <IconButton
+          data-testid="subtask-delete-button"
+          onClick={() => onDelete(localSubtask)}
+          size="small"
+        >
           <DeleteIcon fontSize="small" />
         </IconButton>
-        <IconButton onClick={addNestedSubtask} size="small">
+        <IconButton
+          data-testid="subtask-add-nested-button"
+          onClick={addNestedSubtask}
+          size="small"
+        >
           <AddIcon fontSize="small" />
         </IconButton>
       </Box>

@@ -74,7 +74,6 @@ const ListDrawer: React.FC<IPropps> = ({
       title: "New Item",
       done: false,
       cost: 0,
-      required: false,
       subtasks: [],
     };
 
@@ -145,6 +144,7 @@ const ListDrawer: React.FC<IPropps> = ({
         </Typography>
 
         <IconButton
+          data-testid="close-drawer-button"
           onClick={handleCloseDrawer}
           sx={{
             position: "absolute",
@@ -178,6 +178,7 @@ const ListDrawer: React.FC<IPropps> = ({
           Title:
         </Typography>
         <TextField
+          data-testid="list-title-input"
           fullWidth
           variant="outlined"
           value={updatedList?.title || ""}
@@ -212,6 +213,7 @@ const ListDrawer: React.FC<IPropps> = ({
           <FormControl fullWidth>
             <InputLabel id="simple-select-label">Filter</InputLabel>
             <Select
+              data-testid="filter-select"
               label="Filter"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
@@ -229,6 +231,7 @@ const ListDrawer: React.FC<IPropps> = ({
           </FormControl>
         </Box>
         <Button
+          data-testid="add-task-button"
           variant="contained"
           color="success"
           onClick={handleAddTask}
@@ -241,6 +244,7 @@ const ListDrawer: React.FC<IPropps> = ({
       <Divider />
 
       <Box
+        data-testid="list-items-container"
         sx={{
           flexGrow: 1,
           overflowX: "hidden",
@@ -302,6 +306,7 @@ const ListDrawer: React.FC<IPropps> = ({
         }}
       >
         <Button
+          data-testid="save-list-button"
           variant="contained"
           color="primary"
           onClick={handleSaveList}

@@ -163,6 +163,7 @@ const ListComp: React.FC<IPropps> = ({
                           color: "white",
                         },
                       }}
+                      data-testid="freeze-list-button"
                       onClick={(event) => {
                         event.stopPropagation();
                         handleFreeze();
@@ -184,6 +185,7 @@ const ListComp: React.FC<IPropps> = ({
                           color: "white",
                         },
                       }}
+                      data-testid="freeze-list-button"
                       onClick={(event) => {
                         event.stopPropagation();
                         handleFreeze();
@@ -197,8 +199,8 @@ const ListComp: React.FC<IPropps> = ({
             )}
             <Tooltip title="Share list with a friend">
               <IconButton
+                data-testid="share-list-button"
                 edge="end"
-                aria-label="comments"
                 onClick={(event) => {
                   event.stopPropagation();
                   setShowShareDialog(true);
@@ -209,8 +211,8 @@ const ListComp: React.FC<IPropps> = ({
             </Tooltip>
             <Tooltip title="Delete list">
               <IconButton
+                data-testid="delete-list-button"
                 edge="end"
-                aria-label="comments"
                 onClick={(event) => {
                   event.stopPropagation();
                   setShowDeleteDialog(true);
@@ -226,6 +228,7 @@ const ListComp: React.FC<IPropps> = ({
       >
         <ListItemButton>
           <Checkbox
+            data-testid="complete-list-checkbox"
             color="success"
             checked={list.completed}
             onClick={(event) => {
@@ -275,6 +278,7 @@ const ListComp: React.FC<IPropps> = ({
             Cancel
           </Button>
           <Button
+            data-testid="delete-list-confirm"
             color="secondary"
             variant="contained"
             onClick={() => deleteList(list._id)}
@@ -319,28 +323,15 @@ const ListComp: React.FC<IPropps> = ({
             Email:
           </Typography>
           <TextField
-            fullWidth
-            variant="outlined"
+            data-testid="share-email-input"
+            label="Email"
             value={shareEmail}
             onChange={handleEmailChange}
+            fullWidth
+            error={!!shareError}
+            helperText={shareError}
           />
         </Box>
-        {shareError !== "" && (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              paddingRight: "16px",
-            }}
-          >
-            <Typography
-              variant="body1"
-              sx={{ color: "red", fontSize: "x-small" }}
-            >
-              {shareError}
-            </Typography>
-          </Box>
-        )}
         <DialogActions>
           <Button
             color="primary"
@@ -352,6 +343,7 @@ const ListComp: React.FC<IPropps> = ({
             Cancel
           </Button>
           <Button
+            data-testid="share-list-confirm"
             color="secondary"
             variant="contained"
             onClick={() => shareList()}

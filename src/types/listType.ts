@@ -16,7 +16,6 @@ export interface Item {
   title: string;
   done: boolean;
   cost: number;
-  required: boolean;
   type?: string;
   customFields?: CustomField[];
   subtasks: Subtask[];

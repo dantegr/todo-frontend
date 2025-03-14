@@ -17,6 +17,7 @@ export const updateSubtaskRecursively = (
     return sub;
   });
 };
+
 export const removeSubtaskRecursively = (
   subtasks: Subtask[],
   subtaskToRemove: Subtask

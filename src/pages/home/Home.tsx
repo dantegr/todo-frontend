@@ -189,6 +189,7 @@ const Home: React.FC = () => {
             </Typography>
             <Tooltip title="Create new list">
               <Button
+                name="+"
                 color="inherit"
                 sx={{
                   border: "2px solid",
@@ -199,6 +200,7 @@ const Home: React.FC = () => {
                   },
                 }}
                 onClick={handleOpenDialog}
+                data-testid="add-list-button"
               >
                 +
               </Button>
@@ -272,6 +274,7 @@ const Home: React.FC = () => {
             Cancel
           </Button>
           <Button
+            name="create"
             onClick={handleConfirmCreateList}
             variant="contained"
             color="success"

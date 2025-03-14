@@ -179,6 +179,7 @@ const ListTask: React.FC<IPropps> = ({
           {!isEditing && (
             <>
               <IconButton
+                data-testid="expand-button"
                 onClick={() => setIsExpanded(!isExpanded)}
                 size="small"
               >
@@ -189,12 +190,14 @@ const ListTask: React.FC<IPropps> = ({
                 )}
               </IconButton>
               <Checkbox
+                data-testid="task-checkbox"
                 color="success"
                 checked={editedItem.done}
                 onChange={(e) => handleCheckboxChange(e.target.checked)}
                 size="small"
               />
               <Typography
+                data-testid="task-title"
                 variant="body2"
                 sx={{ flexGrow: 1, fontSize: "0.8rem", fontWeight: "bold" }}
               >
@@ -202,7 +205,11 @@ const ListTask: React.FC<IPropps> = ({
               </Typography>
             </>
           )}
-          <IconButton onClick={() => setIsEditing(!isEditing)} size="small">
+          <IconButton
+            data-testid="edit-button"
+            onClick={() => setIsEditing(!isEditing)}
+            size="small"
+          >
             {isEditing ? (
               <CloseIcon fontSize="small" />
             ) : (
@@ -210,7 +217,11 @@ const ListTask: React.FC<IPropps> = ({
             )}
           </IconButton>
           {!isEditing && (
-            <IconButton onClick={handleDelete} size="small">
+            <IconButton
+              data-testid="delete-button"
+              onClick={handleDelete}
+              size="small"
+            >
               <DeleteIcon fontSize="small" />
             </IconButton>
           )}
@@ -218,6 +229,7 @@ const ListTask: React.FC<IPropps> = ({
         {isEditing && (
           <>
             <TextField
+              data-testid="title-input"
               label="Title"
               value={editedItem.title}
               onChange={(e) => handleChange("title", e.target.value)}
@@ -226,6 +238,7 @@ const ListTask: React.FC<IPropps> = ({
               size="small"
             />
             <TextField
+              data-testid="cost-input"
               label="Cost"
               type="number"
               value={editedItem.cost}
@@ -250,6 +263,7 @@ const ListTask: React.FC<IPropps> = ({
             <FormControl fullWidth margin="dense" size="small">
               <InputLabel id="simple-select-label">Type</InputLabel>
               <Select
+                data-testid="type-select"
                 label="Type"
                 value={editedItem.type || "---"}
                 onChange={(e) => handleChange("type", e.target.value)}
@@ -269,6 +283,7 @@ const ListTask: React.FC<IPropps> = ({
             >
               <Typography variant="subtitle2">Custom Fields</Typography>
               <Button
+                data-testid="add-custom-field-button"
                 variant="contained"
                 color="success"
                 startIcon={<AddIcon />}
@@ -282,6 +297,7 @@ const ListTask: React.FC<IPropps> = ({
               <>
                 <Box key={index} display="flex" alignItems="center" gap={1}>
                   <TextField
+                    data-testid={`custom-field-title-${index}`}
                     label="Field Title"
                     value={field.title}
                     onChange={(e) =>
@@ -292,6 +308,7 @@ const ListTask: React.FC<IPropps> = ({
                     size="small"
                   />
                   <TextField
+                    data-testid={`custom-field-value-${index}`}
                     label="Field Value"
                     value={field.value}
                     onChange={(e) =>
@@ -302,6 +319,7 @@ const ListTask: React.FC<IPropps> = ({
                     size="small"
                   />
                   <IconButton
+                    data-testid={`delete-custom-field-${index}`}
                     onClick={() => {
                       const newCustomFields = [
                         ...(editedItem.customFields || []),
@@ -327,6 +345,7 @@ const ListTask: React.FC<IPropps> = ({
             >
               <Typography variant="subtitle2">Subtasks</Typography>
               <Button
+                data-testid="add-subtask-button"
                 variant="contained"
                 color="success"
                 startIcon={<AddIcon />}
@@ -363,6 +382,7 @@ const ListTask: React.FC<IPropps> = ({
               </>
             ))}
             <Button
+              data-testid="save-button"
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={saveItem}
@@ -378,7 +398,12 @@ const ListTask: React.FC<IPropps> = ({
           </>
         )}
         {isExpanded && !isEditing && (
-          <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={2}>
+          <Box
+            data-testid="expanded-content"
+            display="grid"
+            gridTemplateColumns="repeat(2, 1fr)"
+            gap={2}
+          >
             <Box display="flex" justifyContent="center">
               <Typography
                 variant="body2"
@@ -398,6 +423,7 @@ const ListTask: React.FC<IPropps> = ({
             {editedItem.customFields?.map((field, index) => (
               <Box key={index} display="flex" justifyContent="center">
                 <Typography
+                  data-testid={`custom-field-display-${index}`}
                   variant="body2"
                   sx={{ fontSize: "0.8rem", fontWeight: "bold" }}
                 >
@@ -406,7 +432,7 @@ const ListTask: React.FC<IPropps> = ({
               </Box>
             ))}
             {editedItem.subtasks.length > 0 && (
-              <Box gridColumn="span 2">
+              <Box data-testid="subtasks-list" gridColumn="span 2">
                 <Typography variant="subtitle2">Subtasks:</Typography>
                 {renderSubtasks(editedItem.subtasks || [])}
               </Box>

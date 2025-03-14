@@ -32,6 +32,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
       {...attributes}
       {...listeners}
       onClick={(e) => e.stopPropagation()}
+      data-testid="sortable-item-container"
     >
       <ListTask
         item={item}
