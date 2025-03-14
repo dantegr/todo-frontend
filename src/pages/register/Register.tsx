@@ -9,7 +9,7 @@ import {
   Alert,
   Card,
 } from "@mui/material";
-
+import { handleRegisterApi } from "../../api/userApi";
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -28,11 +28,7 @@ const Register = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:3001/register", {
-        username,
-        email,
-        password,
-      });
+      const response = await handleRegisterApi(username, email, password);
 
       if (response.status === 201) {
         // Redirect to the Home

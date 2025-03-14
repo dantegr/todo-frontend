@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import Cookies from "js-cookie";
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -21,6 +21,20 @@ export const handleLoginApi = async (
   Cookies.set("accessToken", accessToken, { expires: in60Minutes });
 
   return { userId, accessToken };
+};
+
+export const handleRegisterApi = async (
+  username: string,
+  email: string,
+  password: string
+): Promise<AxiosResponse> => {
+  const response = await axios.post<AxiosResponse>(`${apiUrl}/register`, {
+    username,
+    email,
+    password,
+  });
+
+  return response;
 };
 
 export const getUserById = async (

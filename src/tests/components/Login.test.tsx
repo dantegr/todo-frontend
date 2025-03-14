@@ -1,26 +1,31 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import Login from "../pages/login/Login";
+import Login from "../../pages/login/Login";
 import "@testing-library/jest-dom";
-import { AxiosError } from "axios";
-import * as userApi from "../api/userApi";
+import * as userApi from "../../api/userApi";
+import { AuthProvider } from "../../stores/AuthContext";
 
 const mockLogin = vi.fn();
 
-vi.mock("../stores/AuthContext", () => ({
+vi.mock("../../stores/AuthContext", () => ({
   useAuth: () => ({
     accessToken: null,
     login: mockLogin,
   }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 describe("Login Component", () => {
   beforeEach(() => {
     render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      </AuthProvider>
     );
   });
 
