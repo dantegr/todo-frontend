@@ -45,7 +45,7 @@ const Login: React.FC = () => {
       if (typeof e === "string") {
         setError(e);
       } else if (e instanceof AxiosError) {
-        setError(e.response?.data?.error); // works, `e` narrowed to Error
+        setError(e.response?.data?.error);
       }
     }
   };
@@ -81,7 +81,7 @@ const Login: React.FC = () => {
             >
               <img
                 style={{ maxHeight: "3rem", marginRight: "10px" }}
-                src="/src/assets/todo.svg"
+                src="/todo.svg"
               />
               <Typography variant="h4"> To Do App</Typography>
             </Box>

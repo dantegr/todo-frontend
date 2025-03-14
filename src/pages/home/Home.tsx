@@ -182,7 +182,7 @@ const Home: React.FC = () => {
           <Toolbar>
             <img
               style={{ maxHeight: "1.6rem", marginRight: "10px" }}
-              src="/src/assets/todo.svg"
+              src="/todo.svg"
             />
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               {`Welcome ${user?.username}!`}
